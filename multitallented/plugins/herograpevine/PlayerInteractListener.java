@@ -3,13 +3,10 @@ package multitallented.plugins.herograpevine;
 import com.Acrobot.ChestShop.Config.Config;
 import com.Acrobot.ChestShop.Config.Language;
 import com.Acrobot.ChestShop.Config.Property;
-import com.Acrobot.ChestShop.Protection.Plugins.Default;
-import com.Acrobot.ChestShop.Shop.ShopManagement;
 import com.Acrobot.ChestShop.Signs.restrictedSign;
 import com.Acrobot.ChestShop.Utils.uLongName;
 import com.Acrobot.ChestShop.Utils.uSign;
 import java.util.Date;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
@@ -32,44 +29,48 @@ class PlayerInteractListener extends PlayerListener {
     
     @Override
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.isCancelled() || !event.hasBlock())
+        event.getPlayer().sendMessage(!event.hasBlock() + " : " + event.getPlayer().hasPermission("herograpevine.bypass"));
+        if (event.isCancelled() || !event.hasBlock() || event.getPlayer().hasPermission("herograpevine.bypass"))
             return;
         Block block = event.getClickedBlock();
+        event.getPlayer().sendMessage((block instanceof Chest) + " : " + (block instanceof Sign));
         if (block instanceof Chest) {
             Chest chest = (Chest) block;
             String iSName = null;
             outer: for (ItemStack is : chest.getInventory().getContents()) {
-                switch (is.getTypeId()) {
-                    case 264:
-                        if (is.getAmount() > 3) {
-                            iSName = "a lot of Diamonds";
-                            break outer;
-                        }
-                    case 265:
-                        if (is.getAmount() > 9) {
-                            iSName = "a lot of Gold";
-                            break outer;
-                        }
-                    case 266:
-                        if (is.getAmount() > 19) {
-                            iSName = "a lot of Iron";
-                            break outer;
-                        }
-                    case 46:
-                        if (is.getAmount() > 6) {
-                            iSName = "a lot of TNT";
-                            break outer;
-                        }
-                    case 49:
-                        if (is.getAmount() > 7) {
-                            iSName = "a lot of Obsidian";
-                            break outer;
-                        }
-                    case 368:
-                        if (is.getAmount() > 4) {
-                            iSName = "a lot of EnderPearls";
-                            break outer;
-                        }
+                if (is != null) {
+                    switch (is.getTypeId()) {
+                        case 264:
+                            if (is.getAmount() > 3) {
+                                iSName = "a lot of Diamonds";
+                                break outer;
+                            }
+                        case 265:
+                            if (is.getAmount() > 9) {
+                                iSName = "a lot of Gold";
+                                break outer;
+                            }
+                        case 266:
+                            if (is.getAmount() > 19) {
+                                iSName = "a lot of Iron";
+                                break outer;
+                            }
+                        case 46:
+                            if (is.getAmount() > 6) {
+                                iSName = "a lot of TNT";
+                                break outer;
+                            }
+                        case 49:
+                            if (is.getAmount() > 7) {
+                                iSName = "a lot of Obsidian";
+                                break outer;
+                            }
+                        case 368:
+                            if (is.getAmount() > 4) {
+                                iSName = "a lot of EnderPearls";
+                                break outer;
+                            }
+                    }
                 }
                 if (iSName != null) {
                     iSName += " at x:" + (int) chest.getX() + ", y:" + (int) chest.getY() + " and z:" + (int) chest.getZ();

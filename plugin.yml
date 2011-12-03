@@ -12,3 +12,10 @@ commands:
       description: Toggles recieving incoming tips
       permission: <plugin name>.toggle
       usage: /<command> toggle
+permissions:
+   toggle:
+      description: Allows you to toggle recieving tips on or off. You cant recieve tips without this.
+      default: op
+   bypass:
+      description: Disables incoming tips
+      default: false

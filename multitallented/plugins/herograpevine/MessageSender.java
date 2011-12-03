@@ -1,6 +1,5 @@
 package multitallented.plugins.herograpevine;
 
-import com.herocraftonline.dev.heroes.Heroes;
 import java.util.Date;
 import java.util.Random;
 import org.bukkit.ChatColor;
@@ -26,7 +25,10 @@ class MessageSender implements Runnable {
         if (onlinePlayers.length < 2)
             return;
         for (Player p : onlinePlayers) {
-            if (p.hasPermission("herograpevine.notify") && !p.hasPermission("herograpevine.bypass") &&
+            p.sendMessage("Attempting to send a tip to " + p.getDisplayName());
+            p.sendMessage(p.hasPermission("herograpevine.toggle") + " : " + !p.hasPermission("herograpevine.bypass") +
+                    " : " + !myPlugin.hasIgnoredPlayer(p.getName()));
+            if (p.hasPermission("herograpevine.toggle") && !p.hasPermission("herograpevine.bypass") &&
                 !myPlugin.hasIgnoredPlayer(p.getName())) {
                 String message = null;
                 Tip tip;
@@ -34,52 +36,56 @@ class MessageSender implements Runnable {
                 do {
                     switch (rand.nextInt(7)) {
                         case 0:
+                            p.sendMessage("Command: " + i);
                             if (!myPlugin.config.getBoolean("command"))
                                 break;
                             tip = myPlugin.getTip(TipType.COMMAND);
                             if (tip != null && !tip.getPlayer().equals(p)) {
                                 message = ChatColor.GRAY + "[HeroGrapevine] " + ChatColor.WHITE + tip.getPlayer().getDisplayName() + " used the command /"
                                         + tip.getData() + " " + ((new Date().getTime() - tip.getDate().getTime()) / 1000) + " seconds ago";
-                            }
+                            }       
                             break;
                         case 1:
+                            p.sendMessage("Inventory: " + i);
                             if (!myPlugin.config.getBoolean("inventory"))
                                 break;
                             Player currentPlayer = onlinePlayers[rand.nextInt(onlinePlayers.length)];
-                            if (!currentPlayer.equals(p)) {
+                            if (!currentPlayer.equals(p) && !currentPlayer.hasPermission("herograpevine.bypass")) {
                                 String iSName = null;
                                 outer: for (ItemStack is : currentPlayer.getInventory().getContents()) {
-                                    switch (is.getTypeId()) {
-                                        case 264:
-                                            if (is.getAmount() > 3) {
-                                                iSName = "a lot of Diamonds";
-                                                break outer;
-                                            }
-                                        case 265:
-                                            if (is.getAmount() > 9) {
-                                                iSName = "a lot of Gold";
-                                                break outer;
-                                            }
-                                        case 266:
-                                            if (is.getAmount() > 19) {
-                                                iSName = "a lot of Iron";
-                                                break outer;
-                                            }
-                                        case 46:
-                                            if (is.getAmount() > 6) {
-                                                iSName = "a lot of TNT";
-                                                break outer;
-                                            }
-                                        case 49:
-                                            if (is.getAmount() > 7) {
-                                                iSName = "a lot of Obsidian";
-                                                break outer;
-                                            }
-                                        case 368:
-                                            if (is.getAmount() > 4) {
-                                                iSName = "a lot of EnderPearls";
-                                                break outer;
-                                            }
+                                    if (is != null) {
+                                        switch (is.getTypeId()) {
+                                            case 264:
+                                                if (is.getAmount() > 3) {
+                                                    iSName = "a lot of Diamonds";
+                                                    break outer;
+                                                }
+                                            case 265:
+                                                if (is.getAmount() > 9) {
+                                                    iSName = "a lot of Gold";
+                                                    break outer;
+                                                }
+                                            case 266:
+                                                if (is.getAmount() > 19) {
+                                                    iSName = "a lot of Iron";
+                                                    break outer;
+                                                }
+                                            case 46:
+                                                if (is.getAmount() > 6) {
+                                                    iSName = "a lot of TNT";
+                                                    break outer;
+                                                }
+                                            case 49:
+                                                if (is.getAmount() > 7) {
+                                                    iSName = "a lot of Obsidian";
+                                                    break outer;
+                                                }
+                                            case 368:
+                                                if (is.getAmount() > 4) {
+                                                    iSName = "a lot of EnderPearls";
+                                                    break outer;
+                                                }
+                                        }
                                     }
                                 }
                                 if (iSName != null)
@@ -87,6 +93,7 @@ class MessageSender implements Runnable {
                             }
                             break;
                         case 2:
+                            p.sendMessage("Chest: " + i);
                             if (!myPlugin.config.getBoolean("chest"))
                                 break;
                             tip = myPlugin.getTip(TipType.CHEST);
@@ -96,16 +103,18 @@ class MessageSender implements Runnable {
                                     ((new Date().getTime() - tip.getDate().getTime()) /1000) + " seconds ago";
                             break;
                         case 3:
+                            p.sendMessage("Location: " + i);
                             if (!myPlugin.config.getBoolean("location"))
                                 break;
                             Player player = onlinePlayers[rand.nextInt(onlinePlayers.length)];
-                            if (!player.equals(p)) {
+                            if (!player.equals(p) && !player.hasPermission("herograpevine.bypass")) {
                                 Location loc = player.getLocation();
                                 message = ChatColor.GRAY + "[HeroGrapevine] " + ChatColor.WHITE + player.getDisplayName() + " is at x:" + (int) loc.getX() +
                                         ", y:" + (int) loc.getY() + " and z:" + (int) loc.getZ();
                             }
                             break;
                         case 4:
+                            p.sendMessage("PvP: " + i);
                             if (!myPlugin.config.getBoolean("pvp"))
                                 break;
                             tip = myPlugin.getTip(TipType.PVP);
@@ -117,15 +126,17 @@ class MessageSender implements Runnable {
                                     ((new Date().getTime() - tip.getDate().getTime()) /1000) + " seconds ago";
                             break;
                         case 5:
+                            p.sendMessage("Hero: " + i);
                             if (!myPlugin.config.getBoolean("heroes") || myPlugin.getHeroes() == null)
                                 break;
                             tip = myPlugin.getTip(TipType.HERO);
                             if (tip == null || tip.getPlayer().equals(p))
                                 break;
-                            message = ChatColor.GRAY + "[HeroGrapevine] " + ChatColor.WHITE + tip.getPlayer().getDisplayName() + " used " + tip.getData() + " " +
+                            message = ChatColor.GRAY + "[HeroGrapevine] " + ChatColor.WHITE + tip.getPlayer().getDisplayName() + " used " + tip.getData() + "as of " +
                                     ((new Date().getTime() - tip.getDate().getTime()) /1000) + " seconds ago";
                             break;
                         case 6:
+                            p.sendMessage("ChestShop: " + i);
                             if (!myPlugin.config.getBoolean("chestshop") || myPlugin.getChestShop() == null)
                                 break;
                             tip = myPlugin.getTip(TipType.CHEST_SHOP);
@@ -135,19 +146,19 @@ class MessageSender implements Runnable {
                                     ((new Date().getTime() - tip.getDate().getTime()) /1000) + " seconds ago";
                             break;
                         case 7:
+                            p.sendMessage(p.getDisplayName() + " Health: " + i);
                             if (!myPlugin.config.getBoolean("health"))
                                 break;
                             Player aPlayer = onlinePlayers[rand.nextInt(onlinePlayers.length)];
-                            if (!aPlayer.equals(p) && aPlayer.getHealth() < 11) {
+                            if (!aPlayer.equals(p) && aPlayer.getHealth() < 11 && !aPlayer.hasPermission("herograpevine.bypass")) {
                                 message = ChatColor.GRAY + "[HeroGrapevine] " + ChatColor.WHITE + aPlayer.getDisplayName() + "s health is " + aPlayer.getHealth();
                             }
                             break;
                     }
                     i++;
-                } while(message == null && i < 6);
-                if (message == null)
-                    return;
-                p.sendMessage(message);
+                } while(message == null && i < myPlugin.config.getInt("number-tries", 5));
+                if (message != null)
+                    p.sendMessage(message);
             }
         }
                 

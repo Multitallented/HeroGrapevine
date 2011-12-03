@@ -18,7 +18,8 @@ class EntityDamageListener extends EntityListener {
     
     @Override
     public void onEntityDamage(EntityDamageEvent event) {
-        if (event.isCancelled() || !(event.getEntity() instanceof Player) || !(event instanceof EntityDamageByEntityEvent))
+        if (event.isCancelled() || !(event.getEntity() instanceof Player) || ((Player) event.getEntity()).hasPermission("herograpevine.bypass")
+                || !(event instanceof EntityDamageByEntityEvent))
             return;
         EntityDamageByEntityEvent edBy = (EntityDamageByEntityEvent) event;
         if (!(edBy.getDamager() instanceof Player))

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -36,8 +37,7 @@ public class HeroGrapevine extends JavaPlugin {
     @Override
     public void onDisable() {
         Logger log = Logger.getLogger("Minecraft");
-        String message = "[HeroGrapevine] has been disabled!";
-        log.info(message);
+        log.info("[HeroGrapevine] has been disabled!");
         
         //TODO stop cooldown events?
     }
@@ -72,11 +72,18 @@ public class HeroGrapevine extends JavaPlugin {
         
         
         MessageSender theSender = new MessageSender(this);
-        long someInterval = config.getLong("cooldown");
+        //Fix this later
+        long someInterval = config.getLong("cooldown", 60000);
+        if (someInterval < 5000 || someInterval % 1000 != 0) {
+            log.info("[HeroGrapevine] cooldown set improperly, reverting to default.");
+            someInterval = 60000;
+        }
+        String message = "[HeroGrapevine] cooldown set to " + someInterval;
+        log.info(message);
+        someInterval = someInterval / 50;
         getServer().getScheduler().scheduleSyncRepeatingTask(this, theSender, someInterval, someInterval);
         
-        String message = "[HeroGrapevine] has been enabled!";
-        log.info(message);
+        log.info("[HeroGrapevine] has been enabled!");
         
         
     }
@@ -95,20 +102,31 @@ public class HeroGrapevine extends JavaPlugin {
         if (!(sender instanceof Player))
             return false;
         Player player = (Player) sender;
+        player.sendMessage((config.getShortList("ignored-commands") == null) + " : "
+                + (config.getStringList("ignored-commands") != null) + (!config.getStringList("ignored-commands").contains(cmd.getName()))
+                + " : " + !player.hasPermission("herograpevine.bypass"));
         if (cmd.getName().equalsIgnoreCase("herograpevine")) {
-            if (args.length >= 1 && args[1].equalsIgnoreCase("toggle") && player.hasPermission("herograpevine.toggle") &&
-                    !player.hasPermission("herograpevine.bypass")) {
-                if (ignoredPlayers.contains(player.getName())) {
-                    ignoredPlayers.remove(player.getName());
-                    player.sendMessage("[HeroGrapevine] You will now recieve incoming tips.");
+            if (args.length >= 1 && args[0].equalsIgnoreCase("toggle")) {
+                if (player.hasPermission("herograpevine.toggle")) {
+                    if (!player.hasPermission("herograpevine.bypass")) {
+                        if (ignoredPlayers.contains(player.getName())) {
+                            ignoredPlayers.remove(player.getName());
+                            player.sendMessage("[HeroGrapevine] You will now recieve incoming tips.");
+                        } else {
+                            ignoredPlayers.add(player.getName());
+                            player.sendMessage("[HeroGrapevine] You will no longer recieve incoming tips.");
+                        }
+                    } else {
+                        player.sendMessage(ChatColor.RED + "You have herograpevine.bypass and won't recieve tips.");
+                    }
+                    
                 } else {
-                    ignoredPlayers.add(player.getName());
-                    player.sendMessage("[HeroGrapevine] You will no longer recieve incoming tips.");
+                    player.sendMessage(ChatColor.RED + "You don't have permission to use /herograpevine");
                 }
                 return true;
             }
         } else if (config.getBoolean("command",true) && (config.getStringList("ignored-commands") == null
-                || !config.getStringList("ignored-commands").contains(cmd.getName()))) {
+                || !config.getStringList("ignored-commands").contains(cmd.getName())) && !player.hasPermission("herograpevine.bypass")) {
             String command = cmd.getName();
             for (String param : args) {
                 command += " " + param;

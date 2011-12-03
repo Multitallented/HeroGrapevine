@@ -16,8 +16,9 @@ class HeroesListener extends HeroesEventListener {
     
     @Override
     public void onSkillUse(SkillUseEvent event) {
-        if (event.isCancelled())
+        if (event.isCancelled() || event.getPlayer().hasPermission("herograpevine.bypass"))
             return;
-        plugin.putTip(TipType.HERO, new Tip(event.getPlayer(), event.getSkill().getName(), new Date()));
+        String message = event.getSkill().getName() + " and has " + event.getHero().getMana() + " left ";
+        plugin.putTip(TipType.HERO, new Tip(event.getPlayer(), message, new Date()));
     }
 }

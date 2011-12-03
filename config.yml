@@ -2,6 +2,17 @@
 cooldown: 60000
 #
 #
+#How many times should it try to find a tip before giving up
+#Set this higher if you disable tip sources
+number-tries: 5
+#Do you want tips about player commands
+command: true
+#If command is true what commands do you want to not track
+ignored-commands:
+- kick
+- ban
+- tempban
+- lookup
 #Do you want tips about pvp
 pvp: true
 #Do you want tips for players Location
