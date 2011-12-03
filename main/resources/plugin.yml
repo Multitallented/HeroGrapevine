@@ -1,0 +1,9 @@
+author: multitallented
+database: false
+description: Drops hints to players about other players' pvping, coordinates, chests,
+  inventories, purchases, commands.
+generator: http://dinnerbone.com/minecraft/tools/pluginator/
+main: multitallented.plugins.herograpevine.Herograpevine
+name: HeroGrapevine
+startup: postworld
+version: '0.1'
