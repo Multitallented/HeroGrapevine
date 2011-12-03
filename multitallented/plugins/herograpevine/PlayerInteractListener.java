@@ -7,11 +7,12 @@ import com.Acrobot.ChestShop.Signs.restrictedSign;
 import com.Acrobot.ChestShop.Utils.uLongName;
 import com.Acrobot.ChestShop.Utils.uSign;
 import java.util.Date;
-import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.inventory.ItemStack;
@@ -29,16 +30,16 @@ class PlayerInteractListener extends PlayerListener {
     
     @Override
     public void onPlayerInteract(PlayerInteractEvent event) {
-        event.getPlayer().sendMessage(!event.hasBlock() + " : " + event.getPlayer().hasPermission("herograpevine.bypass"));
         if (event.isCancelled() || !event.hasBlock() || event.getPlayer().hasPermission("herograpevine.bypass"))
             return;
-        Block block = event.getClickedBlock();
-        event.getPlayer().sendMessage((block instanceof Chest) + " : " + (block instanceof Sign));
+        BlockState block = event.getClickedBlock().getState();
         if (block instanceof Chest) {
             Chest chest = (Chest) block;
             String iSName = null;
+            event.getPlayer().sendMessage("Chest size: " + chest.getInventory().getContents().length);
             outer: for (ItemStack is : chest.getInventory().getContents()) {
                 if (is != null) {
+                    event.getPlayer().sendMessage(is.getType().name() + " : " + is.getAmount());
                     switch (is.getTypeId()) {
                         case 264:
                             if (is.getAmount() > 3) {
@@ -72,19 +73,20 @@ class PlayerInteractListener extends PlayerListener {
                             }
                     }
                 }
-                if (iSName != null) {
-                    iSName += " at x:" + (int) chest.getX() + ", y:" + (int) chest.getY() + " and z:" + (int) chest.getZ();
-                    plugin.putTip(TipType.CHEST, new Tip(event.getPlayer(), iSName, new Date()));
-                }
+                
             } 
+            if (iSName != null) {
+                iSName += " at x:" + (int) chest.getX() + ", y:" + (int) chest.getY() + " and z:" + (int) chest.getZ();
+                event.getPlayer().sendMessage(iSName);
+                plugin.putTip(TipType.CHEST, new Tip(event.getPlayer(), iSName, new Date()));
+            }
         } else if (block instanceof Sign) {
             Action action = event.getAction();
             if (action != Action.LEFT_CLICK_BLOCK && action != Action.RIGHT_CLICK_BLOCK) return;
 
             Player player = event.getPlayer();
 
-            if (!uSign.isSign(block)) return;
-            Sign sign = (Sign) block.getState();
+            Sign sign = (Sign) block;
 
             if (!uSign.isValid(sign) || player.isSneaking()) return;
 
@@ -112,6 +114,16 @@ class PlayerInteractListener extends PlayerListener {
             
             message = sign.getLine(1) + " " + sign.getLine(3);
             plugin.putTip(TipType.CHEST_SHOP, new Tip(player, message, new Date()));
+        }
+    }
+    
+    @Override
+    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
+        if (event.isCancelled() || !plugin.config.getBoolean("command", true) || event.getPlayer().hasPermission("herograpevine.bypass"))
+            return;
+        String[] message = event.getMessage().split(" ");
+        if (message.length > 0 && !plugin.containsIgnoredCommand(message[0].substring(1))) {
+            plugin.putTip(TipType.COMMAND, new Tip(event.getPlayer(), event.getMessage(), new Date()));
         }
     }
     

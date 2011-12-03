@@ -34,14 +34,14 @@ class MessageSender implements Runnable {
                 Tip tip;
                 int i = 1;
                 do {
-                    switch (rand.nextInt(7)) {
+                    switch (rand.nextInt(8)) {
                         case 0:
                             p.sendMessage("Command: " + i);
                             if (!myPlugin.config.getBoolean("command"))
                                 break;
                             tip = myPlugin.getTip(TipType.COMMAND);
                             if (tip != null && !tip.getPlayer().equals(p)) {
-                                message = ChatColor.GRAY + "[HeroGrapevine] " + ChatColor.WHITE + tip.getPlayer().getDisplayName() + " used the command /"
+                                message = ChatColor.GRAY + "[HeroGrapevine] " + ChatColor.WHITE + tip.getPlayer().getDisplayName() + " used the command "
                                         + tip.getData() + " " + ((new Date().getTime() - tip.getDate().getTime()) / 1000) + " seconds ago";
                             }       
                             break;
@@ -118,9 +118,7 @@ class MessageSender implements Runnable {
                             if (!myPlugin.config.getBoolean("pvp"))
                                 break;
                             tip = myPlugin.getTip(TipType.PVP);
-                            if (tip == null)
-                                break;
-                            if (tip.getPlayer().equals(p))
+                            if (tip == null || tip.getPlayer().equals(p) || (new Date().getTime() - tip.getDate().getTime()) > 300000)
                                 break;
                             message = ChatColor.GRAY + "[HeroGrapevine] " + ChatColor.WHITE + tip.getPlayer().getDisplayName() + " hit " + tip.getData() + " " +
                                     ((new Date().getTime() - tip.getDate().getTime()) /1000) + " seconds ago";
@@ -146,7 +144,7 @@ class MessageSender implements Runnable {
                                     ((new Date().getTime() - tip.getDate().getTime()) /1000) + " seconds ago";
                             break;
                         case 7:
-                            p.sendMessage(p.getDisplayName() + " Health: " + i);
+                            p.sendMessage("Health: " + i);
                             if (!myPlugin.config.getBoolean("health"))
                                 break;
                             Player aPlayer = onlinePlayers[rand.nextInt(onlinePlayers.length)];

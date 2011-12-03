@@ -2,16 +2,10 @@ package multitallented.plugins.herograpevine;
 
 import com.Acrobot.ChestShop.ChestShop;
 import com.herocraftonline.dev.heroes.Heroes;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -31,7 +25,6 @@ public class HeroGrapevine extends JavaPlugin {
     private List<String> ignoredPlayers = new ArrayList<String>();
     private Map<TipType, Tip> lastTip = new HashMap<TipType, Tip>();
     private HeroesListener customListener;
-    private File primaryConfig;
     
     
     @Override
@@ -39,7 +32,7 @@ public class HeroGrapevine extends JavaPlugin {
         Logger log = Logger.getLogger("Minecraft");
         log.info("[HeroGrapevine] has been disabled!");
         
-        //TODO stop cooldown events?
+        //TODO unregister listeners?
     }
 
     @Override
@@ -55,14 +48,19 @@ public class HeroGrapevine extends JavaPlugin {
         pm.registerEvent(Type.PLUGIN_ENABLE, pluginListener, Priority.Normal, this);
         pm.registerEvent(Type.PLUGIN_DISABLE, pluginListener, Priority.Normal, this);
         
+        
+        
         if (config.getBoolean("pvp")) {
             entityListener = new EntityDamageListener(this);
             pm.registerEvent(Type.ENTITY_DAMAGE, entityListener, Priority.Low, this);
         }
         
-        if (config.getBoolean("chest") || config.getBoolean("chestshop")) {
+        if (config.getBoolean("chest") || config.getBoolean("chestshop") || config.getBoolean("command")) {
             playerListener = new PlayerInteractListener(this);
             pm.registerEvent(Type.PLAYER_INTERACT, playerListener, Priority.Low, this);
+            if (config.getBoolean("command")) {
+                pm.registerEvent(Type.PLAYER_COMMAND_PREPROCESS, playerListener, Priority.Low, this);
+            }
         }
         
         if (config.getBoolean("heroes") && getHeroes() != null) {
@@ -102,9 +100,6 @@ public class HeroGrapevine extends JavaPlugin {
         if (!(sender instanceof Player))
             return false;
         Player player = (Player) sender;
-        player.sendMessage((config.getShortList("ignored-commands") == null) + " : "
-                + (config.getStringList("ignored-commands") != null) + (!config.getStringList("ignored-commands").contains(cmd.getName()))
-                + " : " + !player.hasPermission("herograpevine.bypass"));
         if (cmd.getName().equalsIgnoreCase("herograpevine")) {
             if (args.length >= 1 && args[0].equalsIgnoreCase("toggle")) {
                 if (player.hasPermission("herograpevine.toggle")) {
@@ -125,13 +120,6 @@ public class HeroGrapevine extends JavaPlugin {
                 }
                 return true;
             }
-        } else if (config.getBoolean("command",true) && (config.getStringList("ignored-commands") == null
-                || !config.getStringList("ignored-commands").contains(cmd.getName())) && !player.hasPermission("herograpevine.bypass")) {
-            String command = cmd.getName();
-            for (String param : args) {
-                command += " " + param;
-            }
-            lastTip.put(TipType.COMMAND, new Tip(player, command, new Date()));
         }
         return false;
     }
@@ -146,5 +134,14 @@ public class HeroGrapevine extends JavaPlugin {
     
     public boolean hasIgnoredPlayer(String name) {
         return ignoredPlayers.contains(name);
+    }
+    
+    public boolean containsIgnoredCommand(String cmd) {
+        List<String> ignoredCommands = config.getStringList("ignored-commands");
+        if (ignoredCommands != null) {
+            return ignoredCommands.contains(cmd);
+        } else {
+            return false;
+        }
     }
 }
