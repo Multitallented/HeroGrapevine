@@ -3,7 +3,6 @@ package multitallented.plugins.herograpevine;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerListener;
 
 /**
@@ -15,12 +14,6 @@ class PlayerInteractListener extends PlayerListener {
 
     public PlayerInteractListener(HeroGrapevine plugin) {
         this.plugin = plugin;
-    }
-    
-    
-    @Override
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        //TODO assign the player a cooldown if they have permission
     }
     
     @Override
