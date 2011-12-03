@@ -1,5 +1,6 @@
 package multitallented.plugins.herograpevine;
 
+import java.util.Date;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -22,7 +23,7 @@ class EntityDamageListener extends EntityListener {
         EntityDamageByEntityEvent edBy = (EntityDamageByEntityEvent) event;
         if (!(edBy.getDamager() instanceof Player))
             return;
-        //TODO add tip
+        plugin.putTip(TipType.PVP, new Tip((Player) event.getEntity(), ((Player) edBy.getDamager()).getDisplayName(), new Date()));
     }
     
 }

@@ -1,5 +1,7 @@
 package multitallented.plugins.herograpevine;
 
+import com.Acrobot.ChestShop.ChestShop;
+import com.herocraftonline.dev.heroes.Heroes;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -20,9 +22,10 @@ public class HeroGrapevine extends JavaPlugin {
     private EntityDamageListener entityListener;
     private PlayerInteractListener playerListener;
     protected FileConfiguration config;
-    private FakeListener fakeListener;
     private List<String> ignoredPlayers = new ArrayList<String>();
     private Map<TipType, Tip> lastTip = new HashMap<TipType, Tip>();
+    private HeroesListener customListener;
+    private ChestShopListener chestShopListener;
     
     
     @Override
@@ -51,17 +54,25 @@ public class HeroGrapevine extends JavaPlugin {
         pm.registerEvent(Type.PLUGIN_ENABLE, pluginListener, Priority.Normal, this);
         pm.registerEvent(Type.PLUGIN_DISABLE, pluginListener, Priority.Normal, this);
         
-        entityListener = new EntityDamageListener(this);
-        pm.registerEvent(Type.ENTITY_DAMAGE, entityListener, Priority.Low, this);
+        if (config.getBoolean("pvp")) {
+            entityListener = new EntityDamageListener(this);
+            pm.registerEvent(Type.ENTITY_DAMAGE, entityListener, Priority.Low, this);
+        }
         
-        playerListener = new PlayerInteractListener(this);
-        pm.registerEvent(Type.PLAYER_INTERACT, playerListener, Priority.Low, this);
+        if (config.getBoolean("chest")) {
+            playerListener = new PlayerInteractListener(this);
+            pm.registerEvent(Type.PLAYER_INTERACT, playerListener, Priority.Low, this);
+        }
         
-        fakeListener = new FakeListener(this);
-        //TODO use method of callback?
+        if (config.getBoolean("heroes") && getHeroes() != null) {
+            customListener = new HeroesListener(this);
+            pm.registerEvent(Type.CUSTOM_EVENT, customListener, Priority.Low, this);
+        }
         
-        
-        //TODO add ignored players from config file
+        if (config.getBoolean("chestshop") && getChestShop() != null) {
+            chestShopListener = new ChestShopListener(this);
+            pm.registerEvent(Type.CUSTOM_EVENT, chestShopListener, Priority.Low, this);
+        }
         
         
         MessageSender theSender = new MessageSender(this);
@@ -75,6 +86,14 @@ public class HeroGrapevine extends JavaPlugin {
         
     }
     
+    public Heroes getHeroes() {
+        return pluginListener.getHeroes();
+    }
+    
+    public ChestShop getChestShop() {
+        return pluginListener.getChestShop();
+    }
+    
     
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
@@ -82,7 +101,8 @@ public class HeroGrapevine extends JavaPlugin {
             return false;
         Player player = (Player) sender;
         if (cmd.getName().equalsIgnoreCase("herograpevine")) {
-            if (args.length >= 1 && args[1].equalsIgnoreCase("toggle") && player.hasPermission("herograpevine.toggle")) {
+            if (args.length >= 1 && args[1].equalsIgnoreCase("toggle") && player.hasPermission("herograpevine.toggle") &&
+                    !player.hasPermission("herograpevine.bypass")) {
                 if (ignoredPlayers.contains(player.getName())) {
                     ignoredPlayers.remove(player.getName());
                     player.sendMessage("[HeroGrapevine] You will now recieve incoming tips.");
@@ -92,13 +112,13 @@ public class HeroGrapevine extends JavaPlugin {
                 }
                 return true;
             }
-        } else if (config.getBoolean("commands",true) && (config.getStringList("ignored-commands") == null
+        } else if (config.getBoolean("command",true) && (config.getStringList("ignored-commands") == null
                 || !config.getStringList("ignored-commands").contains(cmd.getName()))) {
             String command = cmd.getName();
             for (String param : args) {
                 command += " " + param;
             }
-            lastTip.put(TipType.COMMAND, new Tip(player, TipType.COMMAND, command, new Date()));
+            lastTip.put(TipType.COMMAND, new Tip(player, command, new Date()));
         }
         return false;
     }
@@ -116,23 +136,36 @@ public class HeroGrapevine extends JavaPlugin {
     }
     
     private void processConfig() {
-        if (config.getString("commands") == null) {
-            config.set("commands", true);
+        if (config.get("command") == null) {
+            config.set("command", true);
+        }
+        if (config.get("location") == null) {
+            config.set("location", true);
+        }
+        if (config.get("inventory") == null) {
+            config.set("inventory", true);
+        }
+        if (config.get("pvp") == null) {
+            config.set("pvp", true);
+        }
+        if (config.get("chest") == null) {
+            config.set("chest", true);
+        }
+        if (config.get("heroes") == null) {
+            config.set("heroes", true);
+        }
+        if (config.get("chestshop") == null) {
+            config.set("chestshop", true);
+        }
+        if (config.get("health") == null) {
+            config.set("health", true);
         }
         if (config.get("cooldown") == null) {
             config.set("cooldown", 60000);
         }
-        if (config.getStringList("ignored-players") == null) {
-            config.set("ignored-players", new ArrayList<String>());
-        } else {
-            for (String currentPlayer : (List<String>) config.getStringList("ignored-players")) {
-                ignoredPlayers.add(currentPlayer);
-            }
-        }
         
         if (config.getStringList("ignored-commands") == null) {
-            config.set("ignored-players", new ArrayList<String>());
+            config.set("ignored-commands", new ArrayList<String>());
         }
-        //TODO add more config options here
     }
 }

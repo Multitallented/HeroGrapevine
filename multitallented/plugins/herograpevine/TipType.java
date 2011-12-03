@@ -9,6 +9,7 @@ public enum TipType {
     CHEST,
     LOCATION,
     INVENTORY,
+    HEALTH,
     HERO,
     PVP,
     CHEST_SHOP;
