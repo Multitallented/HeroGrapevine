@@ -1,7 +1,10 @@
 package multitallented.plugins.herograpevine;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -19,7 +22,7 @@ public class HeroGrapevine extends JavaPlugin {
     protected FileConfiguration config;
     private FakeListener fakeListener;
     private List<String> ignoredPlayers = new ArrayList<String>();
-    private Tip lastTip;
+    private Map<TipType, Tip> lastTip = new HashMap<TipType, Tip>();
     
     
     @Override
@@ -95,9 +98,17 @@ public class HeroGrapevine extends JavaPlugin {
             for (String param : args) {
                 command += " " + param;
             }
-            lastTip = new Tip(player, TipType.COMMAND, command);
+            lastTip.put(TipType.COMMAND, new Tip(player, TipType.COMMAND, command, new Date()));
         }
         return false;
+    }
+    
+    public void putTip(TipType tipType, Tip tip) {
+        lastTip.put(tipType, tip);
+    }
+    
+    public Tip getTip(TipType tipType) {
+        return lastTip.get(tipType);
     }
     
     public boolean hasIgnoredPlayer(String name) {
