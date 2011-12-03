@@ -11,7 +11,6 @@ import org.bukkit.event.entity.EntityListener;
  */
 class EntityDamageListener extends EntityListener {
     private final HeroGrapevine plugin;
-
     public EntityDamageListener(HeroGrapevine plugin) {
         this.plugin = plugin;
     }
