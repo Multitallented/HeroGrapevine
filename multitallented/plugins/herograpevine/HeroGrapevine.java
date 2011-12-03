@@ -2,11 +2,16 @@ package multitallented.plugins.herograpevine;
 
 import com.Acrobot.ChestShop.ChestShop;
 import com.herocraftonline.dev.heroes.Heroes;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -25,7 +30,7 @@ public class HeroGrapevine extends JavaPlugin {
     private List<String> ignoredPlayers = new ArrayList<String>();
     private Map<TipType, Tip> lastTip = new HashMap<TipType, Tip>();
     private HeroesListener customListener;
-    private ChestShopListener chestShopListener;
+    private File primaryConfig;
     
     
     @Override
@@ -39,14 +44,10 @@ public class HeroGrapevine extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        Logger log = Logger.getLogger("Minecraft");
         config = getConfig();
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                processConfig();
-            }
-        }).start();
+        config.options().copyDefaults(true);
+        saveConfig();
         
         pluginListener = new PluginListener();
         
@@ -59,7 +60,7 @@ public class HeroGrapevine extends JavaPlugin {
             pm.registerEvent(Type.ENTITY_DAMAGE, entityListener, Priority.Low, this);
         }
         
-        if (config.getBoolean("chest")) {
+        if (config.getBoolean("chest") || config.getBoolean("chestshop")) {
             playerListener = new PlayerInteractListener(this);
             pm.registerEvent(Type.PLAYER_INTERACT, playerListener, Priority.Low, this);
         }
@@ -69,17 +70,11 @@ public class HeroGrapevine extends JavaPlugin {
             pm.registerEvent(Type.CUSTOM_EVENT, customListener, Priority.Low, this);
         }
         
-        if (config.getBoolean("chestshop") && getChestShop() != null) {
-            chestShopListener = new ChestShopListener(this);
-            pm.registerEvent(Type.CUSTOM_EVENT, chestShopListener, Priority.Low, this);
-        }
-        
         
         MessageSender theSender = new MessageSender(this);
         long someInterval = config.getLong("cooldown");
         getServer().getScheduler().scheduleSyncRepeatingTask(this, theSender, someInterval, someInterval);
         
-        Logger log = Logger.getLogger("Minecraft");
         String message = "[HeroGrapevine] has been enabled!";
         log.info(message);
         
@@ -133,39 +128,5 @@ public class HeroGrapevine extends JavaPlugin {
     
     public boolean hasIgnoredPlayer(String name) {
         return ignoredPlayers.contains(name);
-    }
-    
-    private void processConfig() {
-        if (config.get("command") == null) {
-            config.set("command", true);
-        }
-        if (config.get("location") == null) {
-            config.set("location", true);
-        }
-        if (config.get("inventory") == null) {
-            config.set("inventory", true);
-        }
-        if (config.get("pvp") == null) {
-            config.set("pvp", true);
-        }
-        if (config.get("chest") == null) {
-            config.set("chest", true);
-        }
-        if (config.get("heroes") == null) {
-            config.set("heroes", true);
-        }
-        if (config.get("chestshop") == null) {
-            config.set("chestshop", true);
-        }
-        if (config.get("health") == null) {
-            config.set("health", true);
-        }
-        if (config.get("cooldown") == null) {
-            config.set("cooldown", 60000);
-        }
-        
-        if (config.getStringList("ignored-commands") == null) {
-            config.set("ignored-commands", new ArrayList<String>());
-        }
     }
 }

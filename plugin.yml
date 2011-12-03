@@ -3,7 +3,7 @@ database: false
 description: Drops hints to players about other players' pvping, coordinates, chests,
   inventories, purchases, commands.
 generator: http://dinnerbone.com/minecraft/tools/pluginator/
-main: multitallented.plugins.herograpevine.Herograpevine
+main: multitallented.plugins.herograpevine.HeroGrapevine
 name: HeroGrapevine
 startup: postworld
 version: '0.1'

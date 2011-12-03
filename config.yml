@@ -1,0 +1,18 @@
+#Set the cooldown timer for tip notification
+cooldown: 60000
+#
+#
+#Do you want tips about pvp
+pvp: true
+#Do you want tips for players Location
+location: true
+#Do you want tips about players with low health
+health: true
+#Do you want tips about players inventories
+inventory: true
+#Do you want tips about players chests
+chest: true
+#Do you want tips about heroes skills
+heroes: true
+#Do you want tips about chestshop purchases
+chestshop: true

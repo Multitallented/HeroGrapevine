@@ -23,6 +23,8 @@ class MessageSender implements Runnable {
     public void run() {
         Player[] onlinePlayers = myPlugin.getServer().getOnlinePlayers();
         Random rand = new Random();
+        if (onlinePlayers.length < 2)
+            return;
         for (Player p : onlinePlayers) {
             if (p.hasPermission("herograpevine.notify") && !p.hasPermission("herograpevine.bypass") &&
                 !myPlugin.hasIgnoredPlayer(p.getName())) {
