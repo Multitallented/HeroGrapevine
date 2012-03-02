@@ -25,18 +25,14 @@ class MessageSender implements Runnable {
         if (onlinePlayers.length < 2)
             return;
         for (Player p : onlinePlayers) {
-            p.sendMessage("Attempting to send a tip to " + p.getDisplayName());
-            p.sendMessage(p.hasPermission("herograpevine.toggle") + " : " + !p.hasPermission("herograpevine.bypass") +
-                    " : " + !myPlugin.hasIgnoredPlayer(p.getName()));
-            if (p.hasPermission("herograpevine.toggle") && !p.hasPermission("herograpevine.bypass") &&
-                !myPlugin.hasIgnoredPlayer(p.getName())) {
+            if ((HeroGrapevine.permission == null || (HeroGrapevine.permission.has(p.getWorld(), p.getName(), "herograpevine.toggle") &&
+                    !HeroGrapevine.permission.has(p.getWorld(), p.getName(), "herograpevine.bypass"))) && !myPlugin.hasIgnoredPlayer(p.getName())) {
                 String message = null;
                 Tip tip;
                 int i = 1;
                 do {
                     switch (rand.nextInt(8)) {
                         case 0:
-                            p.sendMessage("Command: " + i);
                             if (!myPlugin.config.getBoolean("command"))
                                 break;
                             tip = myPlugin.getTip(TipType.COMMAND);
@@ -46,23 +42,34 @@ class MessageSender implements Runnable {
                             }       
                             break;
                         case 1:
-                            p.sendMessage("Inventory: " + i);
                             if (!myPlugin.config.getBoolean("inventory"))
                                 break;
                             Player currentPlayer = onlinePlayers[rand.nextInt(onlinePlayers.length)];
-                            if (!currentPlayer.equals(p) && !currentPlayer.hasPermission("herograpevine.bypass")) {
+                            if (!currentPlayer.equals(p) && (HeroGrapevine.permission == null ||
+                                    !HeroGrapevine.permission.has(currentPlayer.getWorld(), currentPlayer.getName(), "herograpevine.bypass"))) {
                                 String iSName = null;
                                 outer: for (ItemStack is : currentPlayer.getInventory().getContents()) {
                                     if (is != null) {
                                         switch (is.getTypeId()) {
+                                            case 57:
+                                                iSName = "a lot of Diamonds";
+                                                break outer;
                                             case 264:
                                                 if (is.getAmount() > 3) {
                                                     iSName = "a lot of Diamonds";
                                                     break outer;
                                                 }
+                                            case 41:
+                                                iSName = "a lot of Gold";
+                                                break outer;
                                             case 265:
                                                 if (is.getAmount() > 9) {
                                                     iSName = "a lot of Gold";
+                                                    break outer;
+                                                }
+                                            case 42:
+                                                if (is.getAmount() > 2) {
+                                                    iSName = "a lot of Iron";
                                                     break outer;
                                                 }
                                             case 266:
@@ -93,7 +100,6 @@ class MessageSender implements Runnable {
                             }
                             break;
                         case 2:
-                            p.sendMessage("Chest: " + i);
                             if (!myPlugin.config.getBoolean("chest"))
                                 break;
                             tip = myPlugin.getTip(TipType.CHEST);
@@ -103,18 +109,17 @@ class MessageSender implements Runnable {
                                     ((new Date().getTime() - tip.getDate().getTime()) /1000) + " seconds ago";
                             break;
                         case 3:
-                            p.sendMessage("Location: " + i);
                             if (!myPlugin.config.getBoolean("location"))
                                 break;
                             Player player = onlinePlayers[rand.nextInt(onlinePlayers.length)];
-                            if (!player.equals(p) && !player.hasPermission("herograpevine.bypass")) {
+                            if (!player.equals(p) && (HeroGrapevine.permission == null ||
+                                    !HeroGrapevine.permission.has(player.getWorld(), player.getName(), "herograpevine.bypass"))) {
                                 Location loc = player.getLocation();
                                 message = ChatColor.GRAY + "[HeroGrapevine] " + ChatColor.WHITE + player.getDisplayName() + " is at x:" + (int) loc.getX() +
                                         ", y:" + (int) loc.getY() + " and z:" + (int) loc.getZ();
                             }
                             break;
                         case 4:
-                            p.sendMessage("PvP: " + i);
                             if (!myPlugin.config.getBoolean("pvp"))
                                 break;
                             tip = myPlugin.getTip(TipType.PVP);
@@ -124,7 +129,6 @@ class MessageSender implements Runnable {
                                     ((new Date().getTime() - tip.getDate().getTime()) /1000) + " seconds ago";
                             break;
                         case 5:
-                            p.sendMessage("Hero: " + i);
                             if (!myPlugin.config.getBoolean("heroes") || myPlugin.getHeroes() == null)
                                 break;
                             tip = myPlugin.getTip(TipType.HERO);
@@ -134,7 +138,6 @@ class MessageSender implements Runnable {
                                     ((new Date().getTime() - tip.getDate().getTime()) /1000) + " seconds ago";
                             break;
                         case 6:
-                            p.sendMessage("ChestShop: " + i);
                             if (!myPlugin.config.getBoolean("chestshop") || myPlugin.getChestShop() == null)
                                 break;
                             tip = myPlugin.getTip(TipType.CHEST_SHOP);
@@ -144,11 +147,11 @@ class MessageSender implements Runnable {
                                     ((new Date().getTime() - tip.getDate().getTime()) /1000) + " seconds ago";
                             break;
                         case 7:
-                            p.sendMessage("Health: " + i);
                             if (!myPlugin.config.getBoolean("health"))
                                 break;
                             Player aPlayer = onlinePlayers[rand.nextInt(onlinePlayers.length)];
-                            if (!aPlayer.equals(p) && aPlayer.getHealth() < 11 && !aPlayer.hasPermission("herograpevine.bypass")) {
+                            if (!aPlayer.equals(p) && aPlayer.getHealth() < 11 && (HeroGrapevine.permission == null ||
+                                    !HeroGrapevine.permission.has(aPlayer.getWorld(), aPlayer.getName(), "herograpevine.bypass"))) {
                                 message = ChatColor.GRAY + "[HeroGrapevine] " + ChatColor.WHITE + aPlayer.getDisplayName() + "s health is " + aPlayer.getHealth();
                             }
                             break;

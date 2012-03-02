@@ -11,46 +11,55 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerListener;
 import org.bukkit.inventory.ItemStack;
 
 /**
  *
  * @author Multitallented
  */
-class PlayerInteractListener extends PlayerListener {
+class PlayerInteractListener implements Listener {
     private final HeroGrapevine plugin;
 
     public PlayerInteractListener(HeroGrapevine plugin) {
         this.plugin = plugin;
     }
     
-    @Override
+    @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.isCancelled() || !event.hasBlock() || event.getPlayer().hasPermission("herograpevine.bypass"))
+        if (event.isCancelled() || !event.hasBlock() || (HeroGrapevine.permission != null
+                && HeroGrapevine.permission.has(event.getPlayer().getWorld(), event.getPlayer().getName(), "herograpevine.bypass")))
             return;
         BlockState block = event.getClickedBlock().getState();
         if (block instanceof Chest) {
             Chest chest = (Chest) block;
             String iSName = null;
-            event.getPlayer().sendMessage("Chest size: " + chest.getInventory().getContents().length);
             outer: for (ItemStack is : chest.getInventory().getContents()) {
                 if (is != null) {
-                    event.getPlayer().sendMessage(is.getType().name() + " : " + is.getAmount());
                     switch (is.getTypeId()) {
+                        case 57:
+                            iSName = "a lot of Diamonds";
+                            break outer;
                         case 264:
                             if (is.getAmount() > 3) {
                                 iSName = "a lot of Diamonds";
                                 break outer;
                             }
+                        case 41:
+                            iSName = "a lot of Gold";
+                            break outer;
                         case 265:
                             if (is.getAmount() > 9) {
                                 iSName = "a lot of Gold";
                                 break outer;
                             }
+                        case 42:
+                            iSName = "a lot of Iron";
+                            break outer;
                         case 266:
                             if (is.getAmount() > 19) {
                                 iSName = "a lot of Iron";
@@ -77,7 +86,6 @@ class PlayerInteractListener extends PlayerListener {
             } 
             if (iSName != null) {
                 iSName += " at x:" + (int) chest.getX() + ", y:" + (int) chest.getY() + " and z:" + (int) chest.getZ();
-                event.getPlayer().sendMessage(iSName);
                 plugin.putTip(TipType.CHEST, new Tip(event.getPlayer(), iSName, new Date()));
             }
         } else if (block instanceof Sign) {
@@ -117,9 +125,10 @@ class PlayerInteractListener extends PlayerListener {
         }
     }
     
-    @Override
+    @EventHandler
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        if (event.isCancelled() || !plugin.config.getBoolean("command", true) || event.getPlayer().hasPermission("herograpevine.bypass"))
+        if (event.isCancelled() || !plugin.config.getBoolean("command", true) || (HeroGrapevine.permission != null &&
+                HeroGrapevine.permission.has(event.getPlayer().getWorld(), event.getPlayer().getName(), "herograpevine.bypass")))
             return;
         String[] message = event.getMessage().split(" ");
         if (message.length > 0 && !plugin.containsIgnoredCommand(message[0].substring(1))) {

@@ -7,14 +7,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import net.milkbowl.vault.permission.Permission;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class HeroGrapevine extends JavaPlugin {
@@ -25,6 +25,7 @@ public class HeroGrapevine extends JavaPlugin {
     private List<String> ignoredPlayers = new ArrayList<String>();
     private Map<TipType, Tip> lastTip = new HashMap<TipType, Tip>();
     private HeroesListener customListener;
+    public static Permission permission;
     
     
     @Override
@@ -32,7 +33,7 @@ public class HeroGrapevine extends JavaPlugin {
         Logger log = Logger.getLogger("Minecraft");
         log.info("[HeroGrapevine] has been disabled!");
         
-        //TODO unregister listeners?
+        //TODO stop MessageSender
     }
 
     @Override
@@ -42,30 +43,28 @@ public class HeroGrapevine extends JavaPlugin {
         config.options().copyDefaults(true);
         saveConfig();
         
-        pluginListener = new PluginListener();
+        setupPermissions();
+        
+        pluginListener = new PluginListener(this);
         
         PluginManager pm = this.getServer().getPluginManager();
-        pm.registerEvent(Type.PLUGIN_ENABLE, pluginListener, Priority.Normal, this);
-        pm.registerEvent(Type.PLUGIN_DISABLE, pluginListener, Priority.Normal, this);
+        pm.registerEvents(pluginListener, this);
         
         
         
         if (config.getBoolean("pvp")) {
             entityListener = new EntityDamageListener(this);
-            pm.registerEvent(Type.ENTITY_DAMAGE, entityListener, Priority.Low, this);
+            pm.registerEvents(entityListener, this);
         }
         
         if (config.getBoolean("chest") || config.getBoolean("chestshop") || config.getBoolean("command")) {
             playerListener = new PlayerInteractListener(this);
-            pm.registerEvent(Type.PLAYER_INTERACT, playerListener, Priority.Low, this);
-            if (config.getBoolean("command")) {
-                pm.registerEvent(Type.PLAYER_COMMAND_PREPROCESS, playerListener, Priority.Low, this);
-            }
+            pm.registerEvents(playerListener, this);
         }
         
         if (config.getBoolean("heroes") && getHeroes() != null) {
             customListener = new HeroesListener(this);
-            pm.registerEvent(Type.CUSTOM_EVENT, customListener, Priority.Low, this);
+            pm.registerEvents(customListener, this);
         }
         
         
@@ -102,8 +101,8 @@ public class HeroGrapevine extends JavaPlugin {
         Player player = (Player) sender;
         if (cmd.getName().equalsIgnoreCase("herograpevine")) {
             if (args.length >= 1 && args[0].equalsIgnoreCase("toggle")) {
-                if (player.hasPermission("herograpevine.toggle")) {
-                    if (!player.hasPermission("herograpevine.bypass")) {
+                if (permission == null || permission.has(player.getWorld(), player.getName(), "herograpevine.toggle")) {
+                    if (permission == null || !permission.has(player.getWorld(), player.getName(), "herograpevine.bypass")) {
                         if (ignoredPlayers.contains(player.getName())) {
                             ignoredPlayers.remove(player.getName());
                             player.sendMessage("[HeroGrapevine] You will now recieve incoming tips.");
@@ -143,5 +142,15 @@ public class HeroGrapevine extends JavaPlugin {
         } else {
             return false;
         }
+    }
+    public boolean setupPermissions()
+    {
+        RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
+        if (permissionProvider != null) {
+            permission = permissionProvider.getProvider();
+            if (permission != null)
+                System.out.println("[HeroGrapevine] Hooked into " + permission.getName());
+        }
+        return (permission != null);
     }
 }
