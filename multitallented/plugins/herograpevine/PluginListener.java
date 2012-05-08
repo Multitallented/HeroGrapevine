@@ -5,7 +5,7 @@
 package multitallented.plugins.herograpevine;
 
 import com.Acrobot.ChestShop.ChestShop;
-import com.herocraftonline.dev.heroes.Heroes;
+import com.herocraftonline.heroes.Heroes;
 import java.util.logging.Logger;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

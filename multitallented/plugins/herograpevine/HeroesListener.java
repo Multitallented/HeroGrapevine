@@ -1,6 +1,6 @@
 package multitallented.plugins.herograpevine;
 
-import com.herocraftonline.dev.heroes.api.SkillUseEvent;
+import com.herocraftonline.heroes.api.events.SkillUseEvent;
 import java.util.Date;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

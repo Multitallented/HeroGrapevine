@@ -1,7 +1,7 @@
 package multitallented.plugins.herograpevine;
 
 import com.Acrobot.ChestShop.ChestShop;
-import com.herocraftonline.dev.heroes.Heroes;
+import com.herocraftonline.heroes.Heroes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
